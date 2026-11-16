@@ -1,0 +1,4 @@
+2026.11.16 12:04:02.102  Orders  'demo': failed market buy 0.1 XAUUSD [Invalid stops] (retcode=10016)
+2026.11.16 12:04:03.040  Orders  'demo': request failed retcode=10030 [Unsupported filling mode]
+2026.11.16 12:04:07.219  Expert  Trade failed error 130 (invalid stops MT4)
+2026.11.16 12:04:11.230  Expert  request error 10019 (not enough money)

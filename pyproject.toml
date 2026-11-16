@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ea-doctor-pro"
+version = "0.1.0"
+description = "Offline MT4/MT5 journal, MQL source and trade CSV diagnostic toolkit"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{ name = "NextGen Tech Solutions" }]
+keywords = ["mt5", "metatrader", "mql5", "mql4", "ea", "trading", "static-analysis", "sarif"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Environment :: Console",
+    "Topic :: Software Development :: Quality Assurance"
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "build>=1.2"]
+
+[project.scripts]
+ea-doctor = "ea_doctor.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["ea_doctor*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

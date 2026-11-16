@@ -1,0 +1,59 @@
+name: EA Doctor Pro — source, CLI and privacy tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Python diagnostics and browser asset checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install project
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install -e '.[dev]'
+      - name: Run offline test suite
+        run: pytest -q
+      - name: CLI sample journal
+        run: ea-doctor samples/example-journal.log --format json --output /tmp/ea-doctor-scan.json
+      - name: Validate SARIF output
+        run: |
+          ea-doctor samples/example-ea.mq5 --format sarif --output /tmp/report.sarif
+          python - <<'PY'
+          import json
+          data=json.load(open('/tmp/report.sarif'))
+          assert data['version']=='2.1.0'
+          assert data['runs'][0]['results']
+          print('SARIF ready for CI code scanning')
+          PY
+      - name: Verify standalone browser files
+        run: |
+          node --check web/app.js
+          python - <<'PY'
+          from pathlib import Path
+          html=Path('web/index.html').read_text()
+          assert 'app.js' in html and 'styles.css' in html
+          assert 'source' in html.lower() and 'journal' in html.lower()
+          PY
+      - name: Verify installable package
+        run: |
+          pip wheel --no-deps --no-build-isolation --wheel-dir /tmp/wheels .
+          python - <<'PY'
+          import glob, zipfile
+          f=glob.glob('/tmp/wheels/*.whl')
+          assert len(f)==1
+          with zipfile.ZipFile(f[0]) as z:
+              names=z.namelist()
+              assert any(x.endswith('ea_doctor/journal.py') for x in names)
+              assert any(x.endswith('ea_doctor/trades.py') for x in names)
+          print('Distribution package complete')
+          PY
